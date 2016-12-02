@@ -3,6 +3,7 @@ use wulaphp\app\App;
 use wulaphp\cache\RtCache;
 
 /**
+ * test github is ok
  *
  * Project:     Wulaphp: another mvc framework of php based on php 5.6.0+ .
  * File:        bootstrap.php
