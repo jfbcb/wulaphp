@@ -19,9 +19,9 @@ abstract class Table extends View {
 	/**
 	 * Table constructor.
 	 *
-	 * @param \wulaphp\db\DatabaseConnection $db
+	 * @param string|array|DatabaseConnection $db
 	 */
-	public function __construct(DatabaseConnection $db = null) {
+	public function __construct($db = null) {
 		parent::__construct($db);
 		$this->parseTraits();
 	}
@@ -43,6 +43,7 @@ abstract class Table extends View {
 			if (method_exists($this, 'validateNewData')) {
 				$this->validateNewData($data);
 			}
+			$this->filterFields($data);
 			$sql = new InsertSQL($data);
 			$sql->into($this->table)->setDialect($this->dialect);
 			if ($this->autoIncrement) {
@@ -81,10 +82,12 @@ abstract class Table extends View {
 		}
 		if ($datas) {
 			if (method_exists($this, 'validateNewData')) {
-				foreach ($datas as $data) {
+				foreach ($datas as &$data) {
 					$this->validateNewData($data);
+					$this->filterFields($data);
 				}
 			}
+
 			$sql = new InsertSQL($datas, true);
 			$sql->into($this->table)->setDialect($this->dialect);
 			if ($this->autoIncrement) {
@@ -140,6 +143,7 @@ abstract class Table extends View {
 			if (method_exists($this, 'validateUpdateData')) {
 				$this->validateUpdateData($data);
 			}
+			$this->filterFields($data);
 			$sql = new UpdateSQL($this->table);
 			$sql->set($data)->setDialect($this->dialect)->where($con);
 			$rst = $sql->exec();
@@ -201,6 +205,14 @@ abstract class Table extends View {
 		}
 
 		return $rst;
+	}
+
+	/**
+	 * 过滤数据.
+	 *
+	 * @param array $data 要过滤的数据.
+	 */
+	protected function filterFields(&$data) {
 	}
 
 	/**

@@ -30,10 +30,9 @@ abstract class View {
 	/**
 	 * 创建模型实例.
 	 *
-	 * @param DatabaseConnection $db
-	 *            数据库实例.
+	 * @param string|array|DatabaseConnection $db 数据库实例.
 	 */
-	public function __construct(DatabaseConnection $db = null) {
+	public function __construct($db = null) {
 		$tb          = explode("\\", get_class($this));
 		$this->alias = preg_replace('#(View|Table)$#', '', array_pop($tb));
 		if (!$this->table) {
@@ -44,11 +43,25 @@ abstract class View {
 		}
 		$this->table = '{' . $this->table . '}';
 		if (!$db instanceof DatabaseConnection) {
-			$db = App::db($db);
+			$db = App::db($db === null ? 'default' : $db);
 		}
 		$this->dialect       = $db->getDialect();
 		$this->tableName     = $this->dialect->getTableName($this->table);
 		$this->qualifiedName = $this->table . ' AS ' . $this->alias;
+	}
+
+	/**
+	 * 指定此表的别名.
+	 *
+	 * @param string $alias
+	 *
+	 * @return $this
+	 */
+	public function alias($alias) {
+		$this->alias         = $alias;
+		$this->qualifiedName = $this->table . ' AS ' . $this->alias;
+
+		return $this;
 	}
 
 	/**
@@ -80,11 +93,11 @@ abstract class View {
 	 * @param array|mixed $fields 字段或字段数组.
 	 * @param array       $where  条件.
 	 * @param int         $start
-	 * @param int|null    $limit
+	 * @param int|null    $limit  取多少条数据，默认10条.
 	 *
 	 * @return array 读取后的数组.
 	 */
-	public function find($fields, $where, $start = 0, $limit = null) {
+	public function find($fields, $where, $start = 0, $limit = 10) {
 		$sql = $this->select($fields);
 		$sql->where($where);
 		if ($limit) {
